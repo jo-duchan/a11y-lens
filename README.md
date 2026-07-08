@@ -24,22 +24,29 @@ husky - pre-commit hook exited with code 1
 ## How it works
 
 1. Collects the **staged** UI files (`.jsx`, `.tsx`, `.html`, `.vue`, `.svelte`, …) and their diffs.
-2. Sends them — together with a distilled rule set (`rules/*.md`, drawn from WAI-ARIA APG, WCAG 2.2, eslint-plugin-jsx-a11y and axe-core coverage) — to a headless agent CLI: `claude -p`, `codex exec`, or `cursor-agent -p`, whichever is installed.
+2. Sends them — together with a distilled rule set (`skills/a11y-lens/references/*.md`, drawn from WAI-ARIA APG, WCAG 2.2, eslint-plugin-jsx-a11y and axe-core coverage) — to a headless agent CLI: `claude -p`, `codex exec`, or `cursor-agent -p`, whichever is installed.
 3. Parses the structured findings and gates the commit on `error` severity. Warnings report but never block (unless `--strict`).
 
 **Infrastructure never blocks a commit.** No agent CLI, no network, agent crash → a11y-lens warns and exits 0. Only real accessibility findings gate.
 
 ## Install
 
+a11y-lens has two layers — install either or both:
+
+**Write time (agent skill).** Teaches your coding agent the rules so UI code is accessible *before* the hook ever runs. [The skills CLI](https://skills.sh) installs it for Claude Code, Codex, Cursor, and 60+ other agents:
+
+```bash
+npx skills add jo-duchan/a11y-lens
+```
+
+**Commit time (git hook gate):**
+
 ```bash
 npm install -D @joduchan/a11y-lens   # or pnpm add -D / yarn add -D
 npx a11y-lens init
 ```
 
-`init` does two things:
-
-- Injects a rules reference into your `AGENTS.md`, so interactive agents (Claude Code, Codex, Cursor) apply the rules **while writing** UI code — before the hook ever runs.
-- Prints hook setup for lefthook, husky, or plain `.git/hooks`.
+`init` injects a rules reference into your `AGENTS.md` (a lightweight fallback for agents without skills support) and prints hook setup for lefthook, husky, or plain `.git/hooks`.
 
 Example (lefthook):
 
@@ -64,7 +71,7 @@ Escape hatches: `A11Y_LENS_SKIP=1 git commit …` or `git commit --no-verify`.
 
 ## Rule set
 
-One markdown file per category. Each separates the **static baseline** (what eslint/axe already catch — not re-reported) from the **semantic checks** this tool exists for.
+One markdown file per category in `skills/a11y-lens/references/`, consumed by both the skill and the CLI. Each separates the **static baseline** (what eslint/axe already catch — not re-reported) from the **semantic checks** this tool exists for.
 
 | Category | Semantic checks (examples) |
 |---|---|

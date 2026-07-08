@@ -14,7 +14,7 @@ Static linters (eslint-plugin-jsx-a11y, axe-core, Biome a11y rules) check **synt
 
 ### Two consumption surfaces, one rule set
 
-1. **Write time** — `a11y-lens init` injects a rules reference into the consuming project's `AGENTS.md`, so interactive agents apply the rules *while writing* UI code.
+1. **Write time** — an agent skill (`skills/a11y-lens/SKILL.md`, installable via `npx skills add jo-duchan/a11y-lens`) teaches interactive agents the rules *while writing* UI code. `a11y-lens init` additionally injects a lightweight rules reference into the consuming project's `AGENTS.md` as a fallback.
 2. **Commit time** — `a11y-lens check --staged` runs from a git hook (lefthook, husky, or plain `.git/hooks`), sends the staged UI diff plus the relevant rules to a headless agent CLI, and gates the commit on `error`-severity findings.
 
 ## WHY
@@ -28,20 +28,21 @@ Static linters (eslint-plugin-jsx-a11y, axe-core, Biome a11y rules) check **synt
 1. **Never break a commit for infrastructure reasons.** No agent CLI installed, no network, agent error → warn and pass (exit 0). Only genuine `error`-severity findings gate.
 2. **Deterministic-ish gating.** AI output varies run to run. Only clear rule violations are `error`; judgment calls are `warning` and never block (unless `--strict`).
 3. **Zero runtime dependencies.** Plain Node ESM (≥18). The heavy lifting is delegated to the agent CLI the user already has.
-4. **Rules are data, not code.** Adding or tuning a check means editing a markdown file in `rules/`, never the CLI.
+4. **Rules are data, not code.** Adding or tuning a check means editing a markdown file in `skills/a11y-lens/references/`, never the CLI. The skill and the CLI consume the same files.
 5. **Agent-agnostic.** Auto-detects `claude` → `codex` → `cursor-agent`, overridable with `--agent`. No agent-specific behavior in the rules themselves.
 
 ## Layout
 
 ```
-bin/a11y-lens.mjs    # CLI entry: check | init | rules
-src/staged.mjs       # git staged-file collection
-src/agent.mjs        # agent CLI detection + headless invocation
-src/prompt.mjs       # prompt assembly from rules + files
-src/report.mjs       # findings parsing + terminal report + exit code
-rules/*.md           # the distilled rule set (numbered by category)
-templates/           # AGENTS.md snippet injected by `init`
-test/fixtures/       # intentionally broken components for smoke tests
+bin/a11y-lens.mjs               # CLI entry: check | init | rules
+src/staged.mjs                  # git staged-file collection
+src/agent.mjs                   # agent CLI detection + headless invocation
+src/prompt.mjs                  # prompt assembly from rules + files
+src/report.mjs                  # findings parsing + terminal report + exit code
+skills/a11y-lens/SKILL.md       # agent skill (skills.sh format, progressive disclosure)
+skills/a11y-lens/references/    # the distilled rule set (numbered by category) — single source
+templates/                      # AGENTS.md snippet injected by `init`
+test/fixtures/                  # intentionally broken components for smoke tests
 ```
 
 ## Conventions for working on this repo

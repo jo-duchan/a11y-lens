@@ -2,7 +2,10 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const RULES_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'rules');
+const RULES_DIR = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '..', 'skills', 'a11y-lens', 'references',
+);
 const MAX_TOTAL_BYTES = 160_000;
 
 export function loadRules() {

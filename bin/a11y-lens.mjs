@@ -140,7 +140,7 @@ switch (command) {
     commandInit();
     break;
   case 'rules': {
-    const rulesDir = join(PACKAGE_ROOT, 'rules');
+    const rulesDir = join(PACKAGE_ROOT, 'skills', 'a11y-lens', 'references');
     for (const name of readdirSync(rulesDir).filter((n) => n.endsWith('.md')).sort()) {
       console.log(`${name}  →  ${join(rulesDir, name)}`);
     }
