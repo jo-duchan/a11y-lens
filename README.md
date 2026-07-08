@@ -32,7 +32,7 @@ husky - pre-commit hook exited with code 1
 ## Install
 
 ```bash
-npm install -D a11y-lens   # or pnpm add -D / yarn add -D
+npm install -D @joduchan/a11y-lens   # or pnpm add -D / yarn add -D
 npx a11y-lens init
 ```
 

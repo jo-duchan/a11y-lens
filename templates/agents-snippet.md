@@ -3,7 +3,7 @@
 
 This project uses [a11y-lens](https://github.com/jo-duchan/a11y-lens) for semantic accessibility review. Staged UI changes are checked at commit time; findings with `error` severity block the commit.
 
-When writing or modifying UI code (JSX/TSX/HTML/Vue/Svelte), apply the rule set in `node_modules/a11y-lens/rules/` — read the relevant category before implementing:
+When writing or modifying UI code (JSX/TSX/HTML/Vue/Svelte), apply the rule set in `node_modules/@joduchan/a11y-lens/rules/` — read the relevant category before implementing:
 
 - `01-landmarks-headings.md` — document outline, one h1, no level skips, labelled landmarks
 - `02-images-alt.md` — alt text that describes function in context; icon-only controls need accessible names
