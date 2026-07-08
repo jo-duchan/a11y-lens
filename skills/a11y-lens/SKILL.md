@@ -31,10 +31,10 @@ Core stances that apply everywhere:
 This skill has a companion CLI that runs the same rules through a headless agent at commit time:
 
 ```bash
-npm install -D @joduchan/a11y-lens
+npm install -D @a11y-lens/cli
 npx a11y-lens init                 # AGENTS.md reference + hook setup instructions
 npx a11y-lens check --staged       # what the pre-commit hook runs
 npx a11y-lens check src/Modal.tsx  # review specific files
 ```
 
-If the project has the hook installed, self-check against the rules before finishing UI work — it is cheaper than failing the gate. Repository: https://github.com/jo-duchan/a11y-lens
+If the project has the hook installed, self-check against the rules before finishing UI work — it is cheaper than failing the gate. Repository: https://github.com/a11y-lens/a11y-lens

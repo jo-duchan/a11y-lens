@@ -14,7 +14,7 @@ Static linters (eslint-plugin-jsx-a11y, axe-core, Biome a11y rules) check **synt
 
 ### Two consumption surfaces, one rule set
 
-1. **Write time** — an agent skill (`skills/a11y-lens/SKILL.md`, installable via `npx skills add jo-duchan/a11y-lens`) teaches interactive agents the rules *while writing* UI code. `a11y-lens init` additionally injects a lightweight rules reference into the consuming project's `AGENTS.md` as a fallback.
+1. **Write time** — an agent skill (`skills/a11y-lens/SKILL.md`, installable via `npx skills add a11y-lens/a11y-lens`) teaches interactive agents the rules *while writing* UI code. `a11y-lens init` additionally injects a lightweight rules reference into the consuming project's `AGENTS.md` as a fallback.
 2. **Commit time** — `a11y-lens check --staged` runs from a git hook (lefthook, husky, or plain `.git/hooks`), sends the staged UI diff plus the relevant rules to a headless agent CLI, and gates the commit on `error`-severity findings.
 
 ## WHY

@@ -1,6 +1,6 @@
 {
-  "name": "@joduchan/a11y-lens",
-  "version": "0.3.0",
+  "name": "@a11y-lens/cli",
+  "version": "0.4.0",
   "publishConfig": {
     "access": "public"
   },
@@ -36,7 +36,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jo-duchan/a11y-lens.git"
+    "url": "git+https://github.com/a11y-lens/a11y-lens.git"
   },
   "engines": {
     "node": ">=18"

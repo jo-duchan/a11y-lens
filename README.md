@@ -1,5 +1,7 @@
 # a11y-lens
 
+> **Package** [`@a11y-lens/cli`](https://www.npmjs.com/package/@a11y-lens/cli) · **CLI** `a11y-lens` · **Skill** `npx skills add a11y-lens/a11y-lens`
+
 **AI-powered semantic accessibility linter.** Reviews what static linters can't see — using the AI coding agent you already have (Claude Code, Codex, or Cursor).
 
 Static linters check **syntax**: *does this `img` have an `alt`?*
@@ -36,13 +38,13 @@ a11y-lens has two layers — install either or both:
 **Write time (agent skill).** Teaches your coding agent the rules so UI code is accessible *before* the hook ever runs. [The skills CLI](https://skills.sh) installs it for Claude Code, Codex, Cursor, and 60+ other agents:
 
 ```bash
-npx skills add jo-duchan/a11y-lens
+npx skills add a11y-lens/a11y-lens
 ```
 
 **Commit time (git hook gate):**
 
 ```bash
-npm install -D @joduchan/a11y-lens   # or pnpm add -D / yarn add -D
+npm install -D @a11y-lens/cli   # or pnpm add -D / yarn add -D
 npx a11y-lens init
 ```
 
