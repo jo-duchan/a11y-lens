@@ -1,0 +1,41 @@
+{
+  "name": "a11y-lens",
+  "version": "0.1.0",
+  "description": "AI-powered semantic accessibility linter — reviews what static linters can't see. Runs on Claude Code, Codex, or Cursor at commit time.",
+  "type": "module",
+  "bin": {
+    "a11y-lens": "./bin/a11y-lens.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "rules",
+    "templates",
+    "README.md",
+    "NOTICE",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "lint",
+    "wai-aria",
+    "wcag",
+    "ai",
+    "agent",
+    "pre-commit",
+    "semantic-review"
+  ],
+  "author": "Duchan Jo <jo_duchan@icloud.com> (https://github.com/jo-duchan)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jo-duchan/a11y-lens.git"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

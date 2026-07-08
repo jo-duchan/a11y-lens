@@ -1,0 +1,27 @@
+a11y-lens
+Copyright (c) 2026 Duchan Jo
+
+The rule set in rules/ is an original distillation written for AI-agent
+consumption. It draws on the following prior work for rule coverage and
+accepted accessibility practice:
+
+1. eslint-plugin-jsx-a11y
+   https://github.com/jsx-eslint/eslint-plugin-jsx-a11y
+   License: MIT. Rule intents referenced for the "static baseline" sections.
+
+2. axe-core (Deque Systems, Inc.)
+   https://github.com/dequelabs/axe-core
+   License: MPL-2.0. Rule descriptions referenced for rule coverage mapping.
+   No axe-core source code is included in this package.
+
+3. W3C WAI-ARIA Authoring Practices Guide (APG)
+   https://www.w3.org/WAI/ARIA/apg/
+   License: W3C Document License / W3C Software and Document Notice.
+   Widget interaction patterns (combobox, dialog, tabs, menu, listbox)
+   summarized in rules/04-aria-widgets.md and rules/05-keyboard-interaction.md.
+
+4. WCAG 2.2 (W3C Recommendation)
+   https://www.w3.org/TR/WCAG22/
+   Success criteria referenced by ID throughout the rule set.
+
+This package contains no source code copied from the above projects.
