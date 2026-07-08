@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectStagedUIFiles, collectPathArgs } from '../src/staged.mjs';
+import { installHook, detectRunner } from '../src/hooks.mjs';
 import { detectAgent, runAgent } from '../src/agent.mjs';
 import { buildPrompt } from '../src/prompt.mjs';
 import { parseFindings, printReport, exitCodeFor } from '../src/report.mjs';
@@ -14,12 +15,16 @@ const HELP = `a11y-lens — AI-powered semantic accessibility linter
 Usage:
   a11y-lens check --staged            review staged UI files (for git hooks)
   a11y-lens check <files...>          review specific files
-  a11y-lens init                      inject rules reference into ./AGENTS.md + print hook setup
+  a11y-lens init                      install the pre-commit hook (lefthook/husky/git hooks,
+                                      auto-detected) + inject rules reference into ./AGENTS.md
   a11y-lens rules                     list rule categories
 
 Options for check:
   --agent <claude|codex|cursor>       force a specific agent CLI (default: auto-detect)
   --strict                            exit non-zero on warnings too (default: errors only)
+
+Options for init:
+  --no-hook                           skip hook installation (AGENTS.md only)
 
 Environment:
   A11Y_LENS_AGENT                     same as --agent
@@ -33,7 +38,9 @@ function parseArgs(argv) {
   const args = { _: [], flags: {} };
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i];
-    if (token === '--staged' || token === '--strict') args.flags[token.slice(2)] = true;
+    if (token === '--staged' || token === '--strict' || token === '--no-hook') {
+      args.flags[token.slice(2)] = true;
+    }
     else if (token === '--agent') args.flags.agent = argv[++i];
     else if (token === '--help' || token === '-h') args.flags.help = true;
     else args._.push(token);
@@ -85,7 +92,16 @@ function commandCheck(args) {
   process.exit(exitCodeFor(parsed.findings, { strict: args.flags.strict }));
 }
 
-function commandInit() {
+function commandInit(args) {
+  // 1. Pre-commit hook (lefthook / husky / plain git hooks, auto-detected)
+  if (!args.flags['no-hook']) {
+    const result = installHook(process.cwd());
+    console.log(`a11y-lens: [${result.system}] ${result.message}`);
+  } else {
+    console.log(`a11y-lens: hook skipped (--no-hook). Manual command: ${detectRunner(process.cwd())} a11y-lens check --staged`);
+  }
+
+  // 2. Rules reference for interactive agents
   const snippet = readFileSync(join(PACKAGE_ROOT, 'templates', 'agents-snippet.md'), 'utf8').trimEnd();
   const target = join(process.cwd(), 'AGENTS.md');
   const begin = '<!-- a11y-lens:begin -->';
@@ -105,21 +121,7 @@ function commandInit() {
   }
 
   console.log(`
-Hook setup — pick the one your repo uses:
-
-  lefthook.yml:
-    pre-commit:
-      jobs:
-        - name: a11y-lens
-          run: npx a11y-lens check --staged
-
-  husky (.husky/pre-commit):
-    npx a11y-lens check --staged
-
-  plain git hook (.git/hooks/pre-commit, chmod +x):
-    #!/bin/sh
-    npx a11y-lens check --staged
-
+Richer write-time guidance for skills-capable agents: npx skills add jo-duchan/a11y-lens
 Escape hatches: A11Y_LENS_SKIP=1 git commit …  |  git commit --no-verify`);
 }
 
@@ -137,7 +139,7 @@ switch (command) {
     commandCheck(args);
     break;
   case 'init':
-    commandInit();
+    commandInit(args);
     break;
   case 'rules': {
     const rulesDir = join(PACKAGE_ROOT, 'skills', 'a11y-lens', 'references');

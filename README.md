@@ -46,7 +46,7 @@ npm install -D @joduchan/a11y-lens   # or pnpm add -D / yarn add -D
 npx a11y-lens init
 ```
 
-`init` injects a rules reference into your `AGENTS.md` (a lightweight fallback for agents without skills support) and prints hook setup for lefthook, husky, or plain `.git/hooks`.
+`init` installs the pre-commit hook for you — it detects lefthook (`lefthook.yml`), husky (`.husky/`), or plain `.git/hooks`, picks your package manager's runner (`pnpm exec` / `yarn` / `bunx` / `npx`), and adds the check idempotently. It also injects a rules reference into your `AGENTS.md` (a lightweight fallback for agents without skills support). Use `--no-hook` to skip hook installation.
 
 Example (lefthook):
 

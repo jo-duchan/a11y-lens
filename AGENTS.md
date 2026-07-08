@@ -39,6 +39,7 @@ src/staged.mjs                  # git staged-file collection
 src/agent.mjs                   # agent CLI detection + headless invocation
 src/prompt.mjs                  # prompt assembly from rules + files
 src/report.mjs                  # findings parsing + terminal report + exit code
+src/hooks.mjs                   # hook installer (lefthook/husky/git hooks, runner detection)
 skills/a11y-lens/SKILL.md       # agent skill (skills.sh format, progressive disclosure)
 skills/a11y-lens/references/    # the distilled rule set (numbered by category) — single source
 templates/                      # AGENTS.md snippet injected by `init`
