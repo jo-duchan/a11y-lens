@@ -1,13 +1,13 @@
 {
   "name": "@joduchan/a11y-lens",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publishConfig": {
     "access": "public"
   },
   "description": "AI-powered semantic accessibility linter — reviews what static linters can't see. Runs on Claude Code, Codex, or Cursor at commit time.",
   "type": "module",
   "bin": {
-    "a11y-lens": "./bin/a11y-lens.mjs"
+    "a11y-lens": "bin/a11y-lens.mjs"
   },
   "files": [
     "bin",
