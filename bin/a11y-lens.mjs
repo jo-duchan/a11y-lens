@@ -121,7 +121,7 @@ function commandInit(args) {
   }
 
   console.log(`
-Richer write-time guidance for skills-capable agents: npx skills add a11y-lens/a11y-lens
+Richer write-time guidance for skills-capable agents: npx skills add jo-duchan/a11y-lens
 Escape hatches: A11Y_LENS_SKIP=1 git commit …  |  git commit --no-verify`);
 }
 

@@ -1,7 +1,7 @@
 <!-- a11y-lens:begin -->
 ## Accessibility rules (a11y-lens)
 
-This project uses [a11y-lens](https://github.com/a11y-lens/a11y-lens) for semantic accessibility review. Staged UI changes are checked at commit time; findings with `error` severity block the commit.
+This project uses [a11y-lens](https://github.com/jo-duchan/a11y-lens) for semantic accessibility review. Staged UI changes are checked at commit time; findings with `error` severity block the commit.
 
 When writing or modifying UI code (JSX/TSX/HTML/Vue/Svelte), apply the rule set in `node_modules/@a11y-lens/cli/skills/a11y-lens/references/` — read the relevant category before implementing:
 
@@ -12,7 +12,7 @@ When writing or modifying UI code (JSX/TSX/HTML/Vue/Svelte), apply the rule set 
 - `05-keyboard-interaction.md` — full APG key sets, no hover-only affordances, no keyboard traps
 - `06-focus-management.md` — overlays move and return focus; async results are announced via live regions
 
-Tip: agents with skills support get richer guidance via `npx skills add a11y-lens/a11y-lens`.
+Tip: agents with skills support get richer guidance via `npx skills add jo-duchan/a11y-lens`.
 
 Self-check against these categories before finishing any UI task — it is cheaper than failing the pre-commit gate.
 <!-- a11y-lens:end -->
