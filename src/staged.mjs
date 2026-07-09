@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
 const UI_EXTENSIONS = new Set([
   '.jsx', '.tsx', '.html', '.htm', '.vue', '.svelte', '.astro', '.mdx',
@@ -72,12 +73,17 @@ export function collectPathArgs(paths) {
   for (const path of paths) {
     let content;
     try {
-      content = execFileSync('cat', [path], {
-        encoding: 'utf8',
-        maxBuffer: 10 * 1024 * 1024,
-      });
+      // readFileSync (not a `cat` shell-out): portable to Windows, and filenames
+      // that start with `-` are never mistaken for flags.
+      content = readFileSync(path, 'utf8');
     } catch {
-      files.push({ path, skipped: 'unreadable' });
+      // An unreadable argument that contains whitespace is almost always several
+      // paths the shell never word-split (e.g. an unquoted joined variable in zsh)
+      // delivered as one argument. Surface that instead of silently skipping.
+      const skipped = /\s/.test(path)
+        ? 'looks like several paths passed as one argument — pass each file as a separate, unquoted argument (in zsh, check array/glob expansion)'
+        : 'unreadable';
+      files.push({ path, skipped });
       continue;
     }
     if (Buffer.byteLength(content, 'utf8') > MAX_FILE_BYTES) {
