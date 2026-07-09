@@ -31,6 +31,16 @@ husky - pre-commit hook exited with code 1
 
 **Infrastructure never blocks a commit.** No agent CLI, no network, agent crash → a11y-lens warns and exits 0. Only real accessibility findings gate.
 
+## It samples; it does not audit
+
+a11y-lens is an AI reviewer, not a deterministic linter. The same files reviewed twice can return different findings — even zero on a run that flagged issues a moment earlier. Read the output with that in mind:
+
+- **A clean run ≠ zero issues.** It means nothing surfaced *in that sample*, not that the code is fully accessible.
+- **Findings don't converge to zero.** Re-running to "clear" every last warning is the wrong mental model; a later run may raise something new.
+- **The intended job is gating `--staged` diffs** — catching problems as they're *introduced*. It is not a full-audit tool for an existing codebase; for that, pair it with a human accessibility review.
+
+This is deliberate: only clear `error`-severity violations gate and warnings never block, precisely because AI output varies run to run. (This note belongs here, in the tool's own README — not in the `AGENTS.md` rules block that `init` injects into a consuming project, which is reserved for the accessibility rules themselves.)
+
 ## Install
 
 a11y-lens has two layers — install either or both:
