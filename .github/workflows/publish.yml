@@ -21,8 +21,10 @@ jobs:
           node-version: 24
           registry-url: 'https://registry.npmjs.org'
 
-      # Trusted publishing requires npm >= 11.5.1
-      - run: npm install -g npm@latest
+      # Trusted publishing requires npm >= 11.5.1. Pinned (not @latest): npm 12.0.0
+      # (2026-07-08) regressed provenance signing — `Cannot find module 'sigstore'`.
+      # 11.18.0 is the last version that published this package with provenance.
+      - run: npm install -g npm@11.18.0
 
       - run: node --check bin/a11y-lens.mjs
 
