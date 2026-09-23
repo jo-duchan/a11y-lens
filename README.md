@@ -55,7 +55,7 @@ A `full` review is a superset of a `core` one, so code written to `full` passes 
 Set the level for the whole team in the repository:
 
 ```json
-// a11y-lens.config.json (or the "a11y-lens" field of package.json)
+// a11y-lens.config.json at the repository root (or the "a11y-lens" field of the root package.json)
 { "level": "core", "report": "errors" }
 ```
 
@@ -64,7 +64,7 @@ Set the level for the whole team in the repository:
 | `level` | `core`: only `[core]` checks are sent to the agent. `full`: all checks. | `full` |
 | `report` | `errors`: print errors, and say how many warnings were hidden. `all`: print everything. | `all` |
 
-The defaults are what earlier versions did, so upgrading changes nothing until a project opts in. `A11Y_LENS_LEVEL` and `A11Y_LENS_REPORT` override the file for one run. `--strict` always prints warnings, because it makes them fail the commit. An unknown value is warned about and replaced by the default.
+The defaults run the same checks and print the same output as earlier versions, so upgrading changes nothing a project would notice until it opts in. The rule text itself now carries the tags. `A11Y_LENS_LEVEL` and `A11Y_LENS_REPORT` override the file for one run. `--strict` always prints warnings, because it makes them fail the commit. An unknown value is warned about and replaced by the default.
 
 These levels are not WCAG's A/AA/AAA. They sort checks by who benefits, not by conformance level.
 

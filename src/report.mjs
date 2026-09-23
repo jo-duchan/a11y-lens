@@ -38,9 +38,13 @@ export function parseFindings(text) {
 export function printReport(allFindings, { agentName, report = 'all' } = {}) {
   const findings = report === 'errors' ? allFindings.filter((f) => f.severity === 'error') : allFindings;
   const hidden = allFindings.length - findings.length;
-  if (hidden) console.log(`a11y-lens: ${hidden} warning(s) hidden ${DIM}(report: errors)${RESET}`);
+  // On the last line, beside the totals it qualifies: printed above the report, the count was
+  // followed by a footer saying "0 warning(s)" — a clean-looking run again.
+  const hiddenNote = hidden ? `, ${YELLOW}${hidden} warning(s) hidden${RESET} ${DIM}(report: errors)${RESET}` : '';
   if (findings.length === 0) {
-    console.log(`a11y-lens: no findings ${DIM}(reviewed by ${agentName})${RESET}`);
+    console.log(hidden
+      ? `a11y-lens: no errors${hiddenNote} ${DIM}(reviewed by ${agentName})${RESET}`
+      : `a11y-lens: no findings ${DIM}(reviewed by ${agentName})${RESET}`);
     return;
   }
   const byFile = new Map();
@@ -63,7 +67,7 @@ export function printReport(allFindings, { agentName, report = 'all' } = {}) {
   const warnings = findings.length - errors;
   console.log(
     `\na11y-lens: ${errors ? RED : ''}${errors} error(s)${RESET}, ` +
-    `${warnings ? YELLOW : ''}${warnings} warning(s)${RESET} ` +
+    (hidden ? `${hiddenNote.slice(2)} ` : `${warnings ? YELLOW : ''}${warnings} warning(s)${RESET} `) +
     `${DIM}(reviewed by ${agentName})${RESET}`,
   );
 }

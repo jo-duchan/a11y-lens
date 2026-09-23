@@ -40,7 +40,7 @@ useEffect(() => {
 }, [isOpen]);
 
 {isOpen && (
-  <div ref={dialogRef} tabIndex={-1}>
+  <div ref={dialogRef} tabIndex={-1} aria-label="요금제 변경">
     <h2>요금제 변경</h2>…
   </div>
 )}

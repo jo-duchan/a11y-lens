@@ -182,7 +182,8 @@ test('report errors shows the error, counts the hidden warnings, and still fails
   assert.equal(r.status, 1);
   assert.match(r.stdout, /ERR-ONE/);
   assert.doesNotMatch(r.stdout, /WARN-/);
-  assert.match(r.stdout, /2 warning\(s\) hidden/);
+  // On the footer, beside the totals — not above a footer that says there were none.
+  assert.match(r.stdout.trim().split('\n').at(-1), /1 error\(s\).*2 warning\(s\) hidden/);
 });
 
 test('report all — the same answer — shows the warnings', (t) => {
@@ -200,7 +201,7 @@ test('warnings alone under report errors pass quietly', (t) => {
   const r = s.run(['check', '--staged'], { FAKE_OUTPUT: JSON.stringify([finding('warning', 'WARN-ONE')]) });
   assert.equal(r.status, 0);
   assert.doesNotMatch(r.stdout, /WARN-ONE/);
-  assert.match(r.stdout, /1 warning\(s\) hidden/);
+  assert.match(r.stdout.trim().split('\n').at(-1), /no errors, .*1 warning\(s\) hidden/);
 });
 
 test('--strict shows warnings even under report errors, since they fail the commit', (t) => {
