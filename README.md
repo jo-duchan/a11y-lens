@@ -43,6 +43,31 @@ a11y-lens is an AI reviewer, not a deterministic linter. The same files reviewed
 
 This is deliberate: only clear `error`-severity violations gate and warnings never block, precisely because AI output varies run to run. (This note belongs here, in the tool's own README — not in the `AGENTS.md` rules block that `init` injects into a consuming project, which is reserved for the accessibility rules themselves.)
 
+## Levels: what gets checked, and what gets shown
+
+Not every project needs every check. Each check in the rule set is tagged by who it helps:
+
+- **`core`**: checks that help everyone. They cover accessible names on icon-only controls, labels that are not placeholders, names that match the visible label, autocomplete on identity fields, full keyboard operation, and focus that is moved, returned and never lost.
+- **`full`**: the core checks plus the ones that are specific to screen readers. They cover headings and landmarks, alt text, complete ARIA patterns, errors tied to their fields, and live-region announcements for async results and loading.
+
+A `full` review is a superset of a `core` one, so code written to `full` passes `core`.
+
+Set the level for the whole team in the repository:
+
+```json
+// a11y-lens.config.json at the repository root (or the "a11y-lens" field of the root package.json)
+{ "level": "core", "report": "errors" }
+```
+
+| Setting | Values | Default |
+|---|---|---|
+| `level` | `core`: only `[core]` checks are sent to the agent. `full`: all checks. | `full` |
+| `report` | `errors`: print errors, and say how many warnings were hidden. `all`: print everything. | `all` |
+
+The defaults run the same checks and print the same output as earlier versions, so upgrading changes nothing a project would notice until it opts in. The rule text itself now carries the tags. `A11Y_LENS_LEVEL` and `A11Y_LENS_REPORT` override the file for one run. `--strict` always prints warnings, because it makes them fail the commit. An unknown value is warned about and replaced by the default.
+
+These levels are not WCAG's A/AA/AAA. They sort checks by who benefits, not by conformance level.
+
 ## Install
 
 a11y-lens has two layers — install either or both:
@@ -89,6 +114,8 @@ Escape hatches: `A11Y_LENS_SKIP=1 git commit …` or `git commit --no-verify`.
 | `A11Y_LENS_AGENT` | same as `--agent` |
 | `A11Y_LENS_MODEL` | model passed to `claude` |
 | `A11Y_LENS_TIMEOUT_MS` | agent timeout in milliseconds (default `180000`) |
+| `A11Y_LENS_LEVEL` | `core` or `full` for this run, over the project's setting |
+| `A11Y_LENS_REPORT` | `errors` or `all` for this run, over the project's setting |
 | `A11Y_LENS_SKIP=1` | skip the check entirely |
 
 ## Skipped checks

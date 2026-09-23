@@ -20,11 +20,13 @@ Before writing or reviewing UI code, read the reference file for each category t
 | Click/hover handlers, shortcuts, drag, carousels | [references/05-keyboard-interaction.md](references/05-keyboard-interaction.md) |
 | Overlays, route changes, async results, toasts, loading | [references/06-focus-management.md](references/06-focus-management.md) |
 
-Core stances that apply everywhere:
+**Levels.** Every check is tagged `[core]` or `[full]`. `[core]` checks help everyone — accessible names, keyboard operation, focus that is never lost. `[full]` checks are screen-reader specific — headings and landmarks, alt text, ARIA patterns, live-region announcements. If the project sets `"level": "core"` (in `a11y-lens.config.json`, or the `"a11y-lens"` field of `package.json`), apply only the `[core]` checks and `[core]` examples; otherwise apply all of them.
+
+Stances at every level (items that belong only to `full` are marked):
 
 1. **Prefer native elements** (`button`, `select`, `details`, `dialog`) — they ship the complete pattern for free. A custom widget must implement the **whole** APG pattern; a partial pattern is worse than none.
-2. **Placeholder is not a label. Hover is not a keyboard path. CSS state is not ARIA state.**
-3. Severity discipline: `error` = clear violations (keyboard-dead interactive elements, unnamed icon-only controls, incomplete claimed ARIA patterns, unmanaged overlay focus, silenced informative images). Judgment calls are `warning`.
+2. **Placeholder is not a label. Hover is not a keyboard path.** At `full`, also: **CSS state is not ARIA state.**
+3. Severity discipline: `error` = clear violations (keyboard-dead interactive elements, unnamed icon-only controls, unmanaged overlay focus; at `full`, also incomplete claimed ARIA patterns and silenced informative images). Judgment calls are `warning`.
 
 ## Commit-time gate (CLI)
 

@@ -8,6 +8,7 @@ import { detectAgent, runAgent } from '../src/agent.mjs';
 import { buildPrompt } from '../src/prompt.mjs';
 import { parseFindings, printReport, exitCodeFor } from '../src/report.mjs';
 import { recordPending, listPending, clearReviewed, clearEntry, contentOf, pendingDir } from '../src/pending.mjs';
+import { loadConfig } from '../src/config.mjs';
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -33,6 +34,16 @@ Environment:
   A11Y_LENS_MODEL                     model override passed to claude (optional)
   A11Y_LENS_SKIP=1                    skip the check entirely (escape hatch)
   A11Y_LENS_TIMEOUT_MS                agent timeout in ms (default 180000)
+  A11Y_LENS_LEVEL=core|full           override the project's level (see below)
+  A11Y_LENS_REPORT=errors|all         override the project's report setting
+
+Project settings, in a11y-lens.config.json at the repository root (or the
+"a11y-lens" field of package.json):
+  { "level": "core", "report": "errors" }
+  level   core = checks that help everyone (names, keyboard, focus);
+          full = those plus screen-reader-specific checks (default)
+  report  errors = print errors only, and count the hidden warnings;
+          all = print everything (default). --strict always prints all.
 
 Infrastructure failures (no agent CLI, no network, agent error) never block:
 a11y-lens warns and exits 0. Only accessibility findings gate. When a staged
@@ -100,6 +111,12 @@ function warnPending() {
   }
 }
 
+/** Settings for this run; `--strict` gates on warnings, so it always shows them. */
+function runSettings(args) {
+  const config = loadConfig();
+  return { level: config.level, report: args.flags.strict ? 'all' : config.report };
+}
+
 function commandCheck(args) {
   if (args.flags.pending) return commandCheckPending(args);
   warnPending();
@@ -122,7 +139,8 @@ function commandCheck(args) {
   const detection = detectAgent(args.flags.agent);
   if (detection.error) softFail(detection.error);
 
-  const { prompt, dropped } = buildPrompt(reviewable);
+  const settings = runSettings(args);
+  const { prompt, dropped } = buildPrompt(reviewable, { level: settings.level });
   for (const path of dropped) {
     console.warn(`a11y-lens: dropped ${path} (prompt size budget exceeded)`);
   }
@@ -149,7 +167,7 @@ function commandCheck(args) {
   // typecheck aborted in parallel — is answered.
   if (staged) clearReviewed(included.map((f) => f.path));
 
-  printReport(parsed.findings, { agentName: detection.name });
+  printReport(parsed.findings, { agentName: detection.name, report: settings.report });
   process.exit(exitCodeFor(parsed.findings, { strict: args.flags.strict }));
 }
 
@@ -170,6 +188,7 @@ function commandCheckPending(args) {
 
   const detection = detectAgent(args.flags.agent);
   if (detection.error) softFail(`${detection.error}; ${entries.length} file(s) remain pending`);
+  const settings = runSettings(args);
 
   const batches = new Map();
   for (const item of [...entries].sort((a, b) => a.entry.at.localeCompare(b.entry.at))) {
@@ -193,7 +212,7 @@ function commandCheckPending(args) {
     }
     if (files.length === 0) continue;
 
-    const { prompt, dropped } = buildPrompt(files);
+    const { prompt, dropped } = buildPrompt(files, { level: settings.level });
     const included = files.filter((f) => !dropped.includes(f.path));
     if (included.length === 0) {
       console.warn(`a11y-lens: every file skipped at ${batch[0].entry.at} exceeds the prompt budget — they stay pending.`);
@@ -221,7 +240,7 @@ function commandCheckPending(args) {
     }
   }
 
-  printReport(findings, { agentName: detection.name });
+  printReport(findings, { agentName: detection.name, report: settings.report });
   if (remaining) console.warn(`a11y-lens: ${remaining} file(s) are still pending — run ${RECHECK} again.`);
   process.exit(exitCodeFor(findings, { strict: args.flags.strict }));
 }

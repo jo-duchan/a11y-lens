@@ -12,6 +12,8 @@ When writing or modifying UI code (JSX/TSX/HTML/Vue/Svelte), apply the rule set 
 - `05-keyboard-interaction.md` — full APG key sets, no hover-only affordances, no keyboard traps
 - `06-focus-management.md` — overlays move and return focus; async results are announced via live regions
 
+Each check is tagged `[core]` or `[full]`. If this project's `a11y-lens.config.json` (or the `"a11y-lens"` field of `package.json`) sets `"level": "core"`, apply only the `[core]` checks — the commit-time review checks nothing else.
+
 Tip: agents with skills support get richer guidance via `npx skills add jo-duchan/a11y-lens`.
 
 Self-check against these categories before finishing any UI task — it is cheaper than failing the pre-commit gate.
