@@ -1,37 +1,47 @@
 import { spawnSync } from 'node:child_process';
 
-const TIMEOUT_MS = 180_000;
+const DEFAULT_TIMEOUT_MS = 180_000;
+
+/** A11Y_LENS_TIMEOUT_MS if it is a positive integer, else the default (with a warning for a bad value). */
+export function timeoutMs(env = process.env) {
+  const raw = env.A11Y_LENS_TIMEOUT_MS;
+  if (raw === undefined || raw === '') return DEFAULT_TIMEOUT_MS;
+  const value = Number(raw);
+  if (Number.isInteger(value) && value > 0) return value;
+  console.warn(`a11y-lens: ignoring A11Y_LENS_TIMEOUT_MS="${raw}" (not a positive integer); using ${DEFAULT_TIMEOUT_MS}ms`);
+  return DEFAULT_TIMEOUT_MS;
+}
 
 const AGENTS = {
   claude: {
     bin: 'claude',
-    invoke(prompt) {
+    invoke(prompt, timeout) {
       const args = ['-p', '--output-format', 'text'];
       if (process.env.A11Y_LENS_MODEL) args.push('--model', process.env.A11Y_LENS_MODEL);
       return spawnSync('claude', args, {
         input: prompt,
         encoding: 'utf8',
-        timeout: TIMEOUT_MS,
+        timeout,
         maxBuffer: 10 * 1024 * 1024,
       });
     },
   },
   codex: {
     bin: 'codex',
-    invoke(prompt) {
+    invoke(prompt, timeout) {
       return spawnSync('codex', ['exec', prompt], {
         encoding: 'utf8',
-        timeout: TIMEOUT_MS,
+        timeout,
         maxBuffer: 10 * 1024 * 1024,
       });
     },
   },
   cursor: {
     bin: 'cursor-agent',
-    invoke(prompt) {
+    invoke(prompt, timeout) {
       return spawnSync('cursor-agent', ['-p', prompt, '--output-format', 'text'], {
         encoding: 'utf8',
-        timeout: TIMEOUT_MS,
+        timeout,
         maxBuffer: 10 * 1024 * 1024,
       });
     },
@@ -61,10 +71,10 @@ export function detectAgent(preferred) {
 }
 
 /** Run the review prompt through the agent. Returns { ok, output, error }. */
-export function runAgent(agent, prompt) {
+export function runAgent(agent, prompt, timeout = timeoutMs()) {
   let result;
   try {
-    result = agent.invoke(prompt);
+    result = agent.invoke(prompt, timeout);
   } catch (err) {
     return { ok: false, error: String(err) };
   }

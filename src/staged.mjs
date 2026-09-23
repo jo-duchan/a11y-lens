@@ -58,7 +58,7 @@ export function collectStagedUIFiles() {
 
     let diff = '';
     try {
-      diff = git(['diff', '--cached', '--unified=3', '--', path]);
+      diff = git(['diff', '--cached', '--unified=3', '--', `:(top)${path}`]);
     } catch {
       /* diff is best-effort context */
     }
