@@ -136,16 +136,65 @@ test('an intentional skip and a missing agent record nothing', (t) => {
   assert.equal(s.pending().length, 1);
 });
 
-test('a later run that reviews the same path clears it', (t) => {
+test('an aborted commit retried as it was is cleared by the retry', (t) => {
   const s = sandbox();
   t.after(s.cleanup);
   s.stage('src/A.tsx', ui('SLOW'));
   s.run(['check', '--staged']);
   assert.equal(s.pending().length, 1);
-  s.stage('src/A.tsx', ui());
-  const r = s.run(['check', '--staged']);
+  // Nothing committed (typecheck failed in parallel, say); the same content is committed again.
+  const r = s.run(['check', '--staged'], { A11Y_LENS_TIMEOUT_MS: '20000' });
   assert.equal(r.status, 0, r.stderr);
   assert.deepEqual(s.pending(), []);
+});
+
+test('a skipped commit that landed is not cleared by the next edit to the file', (t) => {
+  const s = sandbox();
+  t.after(s.cleanup);
+  s.stage('src/A.tsx', ui('SLOW'));
+  s.run(['check', '--staged']);
+  s.git('commit', '-qm', 'skipped but landed');
+  // The next commit's diff is only this one-line change; the skipped content is now baseline.
+  s.stage('src/A.tsx', ui('SLOW') + '// tweak\n');
+  const r = s.run(['check', '--staged'], { A11Y_LENS_TIMEOUT_MS: '20000' });
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(s.pending().length, 1);
+});
+
+test('a file whose diff alone overflows the budget is reviewed without it, not dropped', (t) => {
+  const s = sandbox();
+  t.after(s.cleanup);
+  // A rewrite: ~180KB before, ~45KB after — the diff carries both.
+  const line = (i, tag) => `export const V${i} = () => <p>${tag}${'y'.repeat(60)}</p>;\n`;
+  s.stage('src/Big.tsx', Array.from({ length: 1800 }, (_, i) => line(i, 'old')).join(''));
+  s.git('commit', '-qm', 'big');
+  s.stage('src/Big.tsx', Array.from({ length: 440 }, (_, i) => line(i, 'new')).join(''));
+  assert.ok(Buffer.byteLength(s.git('diff', '--cached')) > 160_000, 'fixture must overflow on its diff');
+  const r = s.run(['check', '--staged'], { A11Y_LENS_TIMEOUT_MS: '20000' });
+  assert.equal(r.status, 0, r.stderr);
+  assert.doesNotMatch(r.stderr, /dropped/);
+  assert.deepEqual(s.pending(), []);
+  assert.doesNotMatch(s.prompts().at(-1), /Staged diff for src\/Big\.tsx/);
+});
+
+test('a check run from a subdirectory still records the staged diff', (t) => {
+  const s = sandbox();
+  t.after(s.cleanup);
+  s.stage('src/A.tsx', ui('SLOW'));
+  const r = s.run(['check', '--staged'], {}, join(s.repo, 'src'));
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(s.pending()[0].diff, /^diff --git a\/src\/A\.tsx/);
+});
+
+test('an unreadable record is reported with where it lives', (t) => {
+  const s = sandbox();
+  t.after(s.cleanup);
+  mkdirSync(s.pendingDir, { recursive: true });
+  writeFileSync(join(s.pendingDir, 'future.json'), JSON.stringify({ version: 2 }));
+  const r = s.run(['check', '--pending']);
+  assert.equal(r.status, 0);
+  assert.ok(r.stderr.includes(s.pendingDir.replace(/^\/private/, '')) || r.stderr.includes(s.pendingDir), r.stderr);
+  assert.match(r.stderr, /delete them by hand/);
 });
 
 test('recording the same path again keeps one entry, with the newer skip', (t) => {

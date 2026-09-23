@@ -34,19 +34,19 @@ export function buildPrompt(files) {
   let budget = MAX_TOTAL_BYTES;
 
   for (const file of files) {
-    const block = [
-      `### FILE: ${file.path}`,
-      '```',
-      numbered(file.content),
-      '```',
-      file.diff ? `#### Staged diff for ${file.path} (focus your review here)\n\`\`\`diff\n${file.diff}\n\`\`\`` : '',
-    ].join('\n');
-    const size = Buffer.byteLength(block, 'utf8');
-    if (size > budget) {
+    const fileBlock = [`### FILE: ${file.path}`, '```', numbered(file.content), '```'].join('\n');
+    const withDiff = file.diff
+      ? `${fileBlock}\n#### Staged diff for ${file.path} (focus your review here)\n\`\`\`diff\n${file.diff}\n\`\`\``
+      : fileBlock;
+    // Content is capped at 48KB and a diff is not, so a rewrite can make one file's block larger
+    // than the whole budget — dropped every time, including on every `--pending` re-check. Without
+    // its diff it always fits an empty budget, so it is reviewed whole rather than never.
+    const block = [withDiff, fileBlock].find((b) => Buffer.byteLength(b, 'utf8') <= budget);
+    if (!block) {
       dropped.push(file.path);
       continue;
     }
-    budget -= size;
+    budget -= Buffer.byteLength(block, 'utf8');
     included.push(block);
   }
 

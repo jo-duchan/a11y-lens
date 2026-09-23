@@ -104,13 +104,28 @@ export function listPending(cwd = process.cwd()) {
   return { entries, unreadable };
 }
 
-/** Drop entries for `paths` in the current worktree — called once a staged run reviewed them. */
+/**
+ * Drop entries a staged run has just reviewed — only when the recorded blob is the one staged now.
+ * That is a commit aborted (typecheck failed in parallel, say) and retried as it was: the skipped
+ * content is exactly what was reviewed. If the skipped commit landed instead, its change is in HEAD
+ * and absent from the new diff, so this review did not look at it and the entry must stay.
+ */
 export function clearReviewed(paths, cwd = process.cwd()) {
   try {
     const dir = pendingDir(cwd);
     if (!dir) return;
     const worktree = worktreeOf(cwd);
-    for (const path of paths) rmSync(join(dir, entryName(worktree, path)), { force: true });
+    for (const path of paths) {
+      const file = join(dir, entryName(worktree, path));
+      let entry;
+      try {
+        entry = JSON.parse(readFileSync(file, 'utf8'));
+      } catch {
+        continue;
+      }
+      const staged = git(['rev-parse', `:${path}`], worktree).trim();
+      if (entry.blob && entry.blob === staged) rmSync(file, { force: true });
+    }
   } catch {
     /* best effort: a stale entry is re-checked later, never lost */
   }

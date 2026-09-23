@@ -102,7 +102,7 @@ A staged check records a file as pending when it could not review it:
 | Dropped because the prompt size budget was spent | yes |
 | `A11Y_LENS_SKIP=1`, no agent CLI installed, file over 48KB, no UI files staged | no: deliberate, or it would be skipped again |
 
-An entry is cleared when a later `check --staged` reviews the same path in the same worktree, or when `check --pending` reviews it. `--pending` reviews the content that was **staged at the time**, with its staged diff. That way it reports on the skipped change, not on the whole file as it is now. It works even after the file has changed or its worktree is gone. Each skipped commit is reviewed in its own agent call. Anything that times out or is dropped again stays pending.
+An entry is cleared when `check --pending` reviews it, or when a later `check --staged` in the same worktree reviews the very same staged content (a commit that was aborted and retried). If the skipped commit landed, its change is no longer in the next diff, so only `--pending` clears it. `--pending` reviews the content that was **staged at the time**, with its staged diff. That way it reports on the skipped change, not on the whole file as it is now. It works even after the file has changed or its worktree is gone. Each skipped check is reviewed in its own agent call. Anything that times out or is dropped again stays pending.
 
 **Layout (public contract, version 1).** Other tools may read this, for example a hook that reminds an agent to run `--pending`:
 
@@ -112,7 +112,7 @@ An entry is cleared when a later `check --staged` reviews the same path in the s
   "diff": "<staged diff>", "reason": "agent failed: …", "at": "2026-09-23T06:00:00.000Z" }
 ```
 
-A non-empty directory means something was not reviewed. Any change to this layout bumps `version`.
+A non-empty directory means something was not reviewed. Any change to this layout bumps `version`. A record this version cannot read (another version wrote it, or it is damaged) is reported and never cleared automatically. Once it has been dealt with, delete the file by hand.
 
 ## Rule set
 

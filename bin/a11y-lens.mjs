@@ -7,7 +7,7 @@ import { installHook, detectRunner } from '../src/hooks.mjs';
 import { detectAgent, runAgent } from '../src/agent.mjs';
 import { buildPrompt } from '../src/prompt.mjs';
 import { parseFindings, printReport, exitCodeFor } from '../src/report.mjs';
-import { recordPending, listPending, clearReviewed, clearEntry, contentOf } from '../src/pending.mjs';
+import { recordPending, listPending, clearReviewed, clearEntry, contentOf, pendingDir } from '../src/pending.mjs';
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -61,8 +61,10 @@ function softFail(message) {
 }
 
 /** Record what a staged run could not review, and say so where the committer will see it. */
+const RUN_STARTED = new Date();
+
 function notePending(files, reason) {
-  const result = recordPending(files, reason);
+  const result = recordPending(files, reason, { now: RUN_STARTED });
   if (result.error) {
     console.warn(`a11y-lens: could not record ${files.length} unreviewed file(s) as pending (${result.error}).`);
   } else {
@@ -73,6 +75,13 @@ function notePending(files, reason) {
 function skipStaged(files, message) {
   notePending(files, message);
   softFail(message);
+}
+
+function warnUnreadable(count) {
+  console.warn(
+    `a11y-lens: ${count} pending record(s) in ${pendingDir()} could not be read (another a11y-lens version, or damaged). ` +
+      'This version never clears them; delete them by hand once you have dealt with them.',
+  );
 }
 
 /**
@@ -87,7 +96,7 @@ function warnPending() {
     );
   }
   if (unreadable) {
-    console.warn(`a11y-lens: ${unreadable} pending record(s) could not be read (written by another a11y-lens version?).`);
+    warnUnreadable(unreadable);
   }
 }
 
@@ -122,6 +131,7 @@ function commandCheck(args) {
     notePending(reviewable.filter((f) => dropped.includes(f.path)), 'prompt size budget exceeded');
   }
 
+  if (included.length === 0) process.exit(0);
   console.log(`a11y-lens: reviewing ${included.length} file(s) with ${detection.name}…`);
   const result = runAgent(detection.agent, prompt);
   if (!result.ok) {
@@ -151,7 +161,7 @@ function commandCheck(args) {
 function commandCheckPending(args) {
   const { entries, unreadable } = listPending();
   if (unreadable) {
-    console.warn(`a11y-lens: ${unreadable} pending record(s) could not be read (written by another a11y-lens version?).`);
+    warnUnreadable(unreadable);
   }
   if (entries.length === 0) {
     console.log('a11y-lens: nothing pending.');
@@ -185,6 +195,11 @@ function commandCheckPending(args) {
 
     const { prompt, dropped } = buildPrompt(files);
     const included = files.filter((f) => !dropped.includes(f.path));
+    if (included.length === 0) {
+      console.warn(`a11y-lens: every file skipped at ${batch[0].entry.at} exceeds the prompt budget — they stay pending.`);
+      remaining += files.length;
+      continue;
+    }
     console.log(
       `a11y-lens: reviewing ${included.length} pending file(s) skipped at ${batch[0].entry.at} with ${detection.name}…`,
     );
