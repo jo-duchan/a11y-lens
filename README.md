@@ -31,6 +31,8 @@ husky - pre-commit hook exited with code 1
 
 **Infrastructure never blocks a commit.** No agent CLI, no network, agent crash → a11y-lens warns and exits 0. Only real accessibility findings gate.
 
+**…but a skipped check does not pass for a clean one.** Exiting 0 means your hook runner shows the same ✔️ either way, so when a staged check could not review a file — the agent timed out or failed, its output could not be parsed, or the file was dropped for the prompt size budget — a11y-lens records it as *pending*. The next check warns about it, and `a11y-lens check --pending` reviews it later. See [Skipped checks](#skipped-checks).
+
 ## It samples; it does not audit
 
 a11y-lens is an AI reviewer, not a deterministic linter. The same files reviewed twice can return different findings — even zero on a run that flagged issues a moment earlier. Read the output with that in mind:
@@ -76,10 +78,41 @@ a11y-lens check --staged           # what the git hook runs
 a11y-lens check src/Modal.tsx      # review specific files
 a11y-lens check --staged --strict  # warnings also fail
 a11y-lens check --staged --agent codex
+a11y-lens check --pending          # review files an earlier check skipped
 a11y-lens rules                    # list rule categories
 ```
 
 Escape hatches: `A11Y_LENS_SKIP=1 git commit …` or `git commit --no-verify`.
+
+| Environment | Effect |
+|---|---|
+| `A11Y_LENS_AGENT` | same as `--agent` |
+| `A11Y_LENS_MODEL` | model passed to `claude` |
+| `A11Y_LENS_TIMEOUT_MS` | agent timeout in milliseconds (default `180000`) |
+| `A11Y_LENS_SKIP=1` | skip the check entirely |
+
+## Skipped checks
+
+A staged check records a file as pending when it could not review it:
+
+| Why the file was not reviewed | Recorded? |
+|---|---|
+| Agent timed out, crashed, or exited non-zero (including logged out or out of quota) | yes |
+| Agent output could not be parsed as findings | yes |
+| Dropped because the prompt size budget was spent | yes |
+| `A11Y_LENS_SKIP=1`, no agent CLI installed, file over 48KB, no UI files staged | no: deliberate, or it would be skipped again |
+
+An entry is cleared when a later `check --staged` reviews the same path in the same worktree, or when `check --pending` reviews it. `--pending` reviews the content that was **staged at the time**, with its staged diff. That way it reports on the skipped change, not on the whole file as it is now. It works even after the file has changed or its worktree is gone. Each skipped commit is reviewed in its own agent call. Anything that times out or is dropped again stays pending.
+
+**Layout (public contract, version 1).** Other tools may read this, for example a hook that reminds an agent to run `--pending`:
+
+```
+<git rev-parse --git-common-dir>/a11y-lens/pending/<sha1>.json
+{ "version": 1, "worktree": "/abs/path", "path": "src/A.tsx", "blob": "<index sha>",
+  "diff": "<staged diff>", "reason": "agent failed: …", "at": "2026-09-23T06:00:00.000Z" }
+```
+
+A non-empty directory means something was not reviewed. Any change to this layout bumps `version`.
 
 ## Rule set
 
