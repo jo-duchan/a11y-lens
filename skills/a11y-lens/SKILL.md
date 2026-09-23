@@ -20,6 +20,8 @@ Before writing or reviewing UI code, read the reference file for each category t
 | Click/hover handlers, shortcuts, drag, carousels | [references/05-keyboard-interaction.md](references/05-keyboard-interaction.md) |
 | Overlays, route changes, async results, toasts, loading | [references/06-focus-management.md](references/06-focus-management.md) |
 
+**Levels.** Every check is tagged `[core]` or `[full]`. `[core]` checks help everyone — accessible names, keyboard operation, focus that is never lost. `[full]` checks are screen-reader specific — headings and landmarks, alt text, ARIA patterns, live-region announcements. If the project sets `"level": "core"` (in `a11y-lens.config.json`, or the `"a11y-lens"` field of `package.json`), apply only the `[core]` checks and `[core]` examples; otherwise apply all of them.
+
 Core stances that apply everywhere:
 
 1. **Prefer native elements** (`button`, `select`, `details`, `dialog`) — they ship the complete pattern for free. A custom widget must implement the **whole** APG pattern; a partial pattern is worse than none.

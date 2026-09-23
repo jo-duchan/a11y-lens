@@ -17,19 +17,21 @@ sources: [W3C WAI-ARIA APG patterns, WCAG 4.1.2, eslint-plugin-jsx-a11y role-* r
 
 For any custom widget in the diff, identify which APG pattern it is imitating, then verify the pattern is **complete** — states, properties, and relationships all present. Missing pieces of a claimed pattern are `error`.
 
-1. **Combobox / select-like** (custom dropdown, autocomplete):
+1. `[full]` **Combobox / select-like** (custom dropdown, autocomplete):
    - Trigger: `role="combobox"`, `aria-expanded` toggling, `aria-controls` → listbox id, `aria-haspopup="listbox"` where appropriate.
    - Popup: `role="listbox"`, options `role="option"` with `aria-selected`; active option tracked via `aria-activedescendant` on the combobox (or roving focus — one or the other, not both).
    - A styled `div` dropdown with only `onClick` handlers and none of the above is the classic failure → `error`.
-2. **Dialog / modal**: `role="dialog"` + `aria-modal="true"`, labelled by its title. Background content must be inert or `aria-hidden` while open. (Focus behavior → rules/06.)
-3. **Tabs**: `role="tablist"` / `tab` / `tabpanel`, `aria-selected` on the active tab, `aria-controls` ↔ `aria-labelledby` linkage between tab and panel.
-4. **Menu**: `role="menu"`/`menuitem` is for **command menus**, not site navigation. Nav links wrapped in `role="menu"` is a misuse → `warning` (breaks expected keyboard model).
-5. **Switch vs checkbox vs button**: a toggle announced as what it visually is — `role="switch"` needs `aria-checked`, not `aria-pressed`; mixing the two vocabularies is `warning`.
-6. **State must live in ARIA, not only in CSS.** `className={isOpen ? 'open' : ''}` with no `aria-expanded` change means AT never hears the state change → `error` for expand/collapse triggers.
-7. **`aria-hidden` on focusable content** or on an element containing focusable children → `error` (focusable but invisible to AT).
-8. **Redundant/contradictory ARIA**: `role="button"` on `button`, `aria-label` duplicating identical visible text where unnecessary → `notice`-level `warning`; contradiction (label says one thing, visible text another) → follow rules/03 §2.
+2. `[full]` **Dialog / modal**: `role="dialog"` + `aria-modal="true"`, labelled by its title. Background content must be inert or `aria-hidden` while open. (Focus behavior → rules/06.)
+3. `[full]` **Tabs**: `role="tablist"` / `tab` / `tabpanel`, `aria-selected` on the active tab, `aria-controls` ↔ `aria-labelledby` linkage between tab and panel.
+4. `[full]` **Menu**: `role="menu"`/`menuitem` is for **command menus**, not site navigation. Nav links wrapped in `role="menu"` is a misuse → `warning` (breaks expected keyboard model).
+5. `[full]` **Switch vs checkbox vs button**: a toggle announced as what it visually is — `role="switch"` needs `aria-checked`, not `aria-pressed`; mixing the two vocabularies is `warning`.
+6. `[full]` **State must live in ARIA, not only in CSS.** `className={isOpen ? 'open' : ''}` with no `aria-expanded` change means AT never hears the state change → `error` for expand/collapse triggers.
+7. `[full]` **`aria-hidden` on focusable content** or on an element containing focusable children → `error` (focusable but invisible to AT).
+8. `[full]` **Redundant/contradictory ARIA**: `role="button"` on `button`, `aria-label` duplicating identical visible text where unnecessary → `notice`-level `warning`; contradiction (label says one thing, visible text another) → follow rules/03 §2.
 
 ## Examples
+
+### `[full]` Combobox
 
 Bad — half a combobox:
 

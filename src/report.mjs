@@ -31,7 +31,14 @@ export function parseFindings(text) {
   return { error: 'could not parse agent output as a findings array' };
 }
 
-export function printReport(findings, { agentName } = {}) {
+/**
+ * `report: 'errors'` shows errors only and says how many warnings it held back — the count, so a
+ * clean-looking run is not mistaken for a run that found nothing.
+ */
+export function printReport(allFindings, { agentName, report = 'all' } = {}) {
+  const findings = report === 'errors' ? allFindings.filter((f) => f.severity === 'error') : allFindings;
+  const hidden = allFindings.length - findings.length;
+  if (hidden) console.log(`a11y-lens: ${hidden} warning(s) hidden ${DIM}(report: errors)${RESET}`);
   if (findings.length === 0) {
     console.log(`a11y-lens: no findings ${DIM}(reviewed by ${agentName})${RESET}`);
     return;
