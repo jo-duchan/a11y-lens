@@ -16,7 +16,13 @@ const AGENTS = {
   claude: {
     bin: 'claude',
     invoke(prompt, timeout) {
-      const args = ['-p', '--output-format', 'text'];
+      // **The review runs without the host project's hooks.** `claude -p` in the repository is a full
+      // session there, so a project Stop hook applies to it too — and one that asks for
+      // `a11y-lens check --pending` (tapflow's did) made each reviewer start another review, which
+      // fanned out until every one of them timed out. A reviewer has no business running the
+      // project's gates. Only hooks are turned off: `--bare` would also skip the keychain, and with
+      // it an OAuth login.
+      const args = ['-p', '--output-format', 'text', '--settings', JSON.stringify({ disableAllHooks: true })];
       if (process.env.A11Y_LENS_MODEL) args.push('--model', process.env.A11Y_LENS_MODEL);
       return spawnSync('claude', args, {
         input: prompt,
