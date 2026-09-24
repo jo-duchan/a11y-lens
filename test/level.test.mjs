@@ -149,6 +149,7 @@ const FAKE_CLAUDE = `#!/usr/bin/env node
 const fs = require('node:fs');
 let input = '';
 process.stdin.on('data', (d) => (input += d)).on('end', () => {
+  if (process.env.FAKE_ARGS) fs.writeFileSync(process.env.FAKE_ARGS, JSON.stringify(process.argv.slice(2)));
   fs.appendFileSync(process.env.FAKE_LOG, input + '\\n<<<END>>>\\n');
   process.stdout.write(process.env.FAKE_OUTPUT ?? '[]');
 });
@@ -236,4 +237,16 @@ test('--pending reviews at the project level too', (t) => {
   assert.equal(readdirSync(pendingDir).length, 1);
   s.run(['check', '--pending']);
   assert.doesNotMatch(s.lastPrompt(), /`\[full\]`/);
+});
+
+test('the reviewer runs with the host project\'s hooks turned off', (t) => {
+  // A host Stop hook asking for `a11y-lens check --pending` made every reviewer start another review.
+  const s = cliSandbox();
+  t.after(s.cleanup);
+  const argsFile = join(s.dir, 'args.json');
+  s.run(['check', '--staged'], { FAKE_ARGS: argsFile });
+  const args = JSON.parse(readFileSync(argsFile, 'utf8'));
+  const at = args.indexOf('--settings');
+  assert.ok(at >= 0, `no --settings in ${args.join(' ')}`);
+  assert.deepEqual(JSON.parse(args[at + 1]), { disableAllHooks: true });
 });
